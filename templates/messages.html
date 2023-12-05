@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block welcome %}
+
+<h1>YOU ARE IN, {{ login }}</h1>
+
+{% endblock %}
+
+{% block content%}
+
+<h2>Other's messages:</h2>
+{% if all_messages %}
+    {% for message in all_messages %}
+        {{ message }}<br>
+    {% endfor %}
+{% else %}
+Here's nothing yet...
+{% endif %}
+
+<br>
+
+<form action="" method="POST">
+    <p>
+        <label for="message">Type your message here:</label>
+        <input type="text" name="message">
+        <input type="submit" name="send_message">
+    </p>
+
+</form>
+
+{% endblock %}

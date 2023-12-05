@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>{% block title %} some page {% endblock %}</title>
+	</head>
+
+	<body>
+		{% block menu %}
+			<nav>
+				<a href="/">About</a>
+				<a href="#">Home</a>
+			</nav>
+		{% endblock %}
+
+		{% block welcome %}
+		{% endblock %}
+
+		{% block content %}
+		{% endblock %}
+
+	<a href="/logout">LOGOUT</a>
+	</body>
+</html>
