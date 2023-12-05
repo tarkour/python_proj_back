@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from database_runner import *
 import datetime
 from datetime import timedelta
@@ -16,7 +16,7 @@ def main():
 #     return 'hello, world??'
 
 
-# git check test
+
 
 @app.route('/messages', methods=['GET', 'POST'])
 def messages():
@@ -25,20 +25,20 @@ def messages():
         session.permanent = True
         all_messages = db.query(Messages).all()
 
-        message = ''
-        if request.method == 'POST':
+        message = None
+        print('request.method = ', request.method)
+        if request.method == 'POST' and message != None:
 
             message = request.form.get('message')
-            # print(datetime.datetime.utcnow())
+
             di = db.query(Users).filter_by(name=login).all() # получение списка с содержанием Users(login)
             d = di[0] # получение самого Users(login)
-            # print(d.get_id())
-            # print(message)
-            # print(datetime.datetime.utcnow())
+
             add_message = Messages(d.get_id(), message, datetime.datetime.utcnow())
             db.add(add_message)
             db.commit()
-
+            message = None
+            print('message =',message)
 
         return render_template('messages.html',
                                login=login,
@@ -62,21 +62,32 @@ def login():
     print(login, password)
 
 
-    if db.query(Users).filter(Users.name == login).all() != []:
-        print('login correct')
+    if db.query(Users).filter(Users.name == login).all()[0] != []:
+        login_user_id = db.query(Users).filter(Users.name == login).all()[0]
+        login_user_id = login_user_id.get_id()
+        passwords_user_id = db.query(Passwords).filter(Passwords.password == password).all() # получение всех списков, где пароль такой же, как мы ввели
+                                                                                            # проверка делается на случай одинковых паролей в базе данных
+        flag = False
+        temp_pass = ''
+        for p in passwords_user_id:
 
-        if db.query(Passwords).filter(Passwords.password == password).all() != [] \
-                and db.query(Users, Passwords).filter(Users.id == Passwords.user_id).filter(Users.name == login).filter(Passwords.password == password).all() != []:
-            print('password correct')
-            print('You are in!')
+            if login_user_id == p.get_user_id(): # сравнение id у логина и user_id у пароля
+                flag = True # если совпадает - флаг становится True
+                temp_pass = p.get_pass()
 
+
+        if flag == True and temp_pass == password:
+            flash('You are in!')
             session['login'] = login
             return redirect(url_for('messages'))
-
         else:
-            print('wrong password')
+            flash('wrong pass')
+            return redirect(url_for('login'))
+
     else:
-        print('wrong login')
+        flash('wrong login')
+        return redirect(url_for('login'))
+
 
 
 

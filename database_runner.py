@@ -23,6 +23,7 @@ class Users(Base):
 
     def get_name(self):
         return self.name
+
 class Passwords(Base):
     __tablename__ = 'passwords'
     user_id = Column('user_id', Integer, ForeignKey('users.id'), primary_key=True)
@@ -35,6 +36,12 @@ class Passwords(Base):
 
     def __repr__(self):
         return f'({self.user_id} {self.password})'
+
+    def get_user_id(self):
+        return self.user_id
+
+    def get_pass(self):
+        return self.password
 
 
 class Messages(Base):
@@ -102,11 +109,14 @@ db = Session() #instance
 # user2 = Users('aboba')
 # user3 = Users('aloha')
 # user4 = Users('abzhora')
-#
+# user5 = Users('mamont')
+
+
 # db.add(user1)
 # db.add(user2)
 # db.add(user3)
 # db.add(user4)
+# db.add(user5)
 # db.commit()
 #
 #
@@ -114,11 +124,13 @@ db = Session() #instance
 # p2 = Passwords(2, 'asasfsdasd')
 # p3 = Passwords(3, 'as1214')
 # p4 = Passwords(4, 'adxz cz')
+# p5 = Passwords(5, 'asdasd')
 #
 # db.add(p1)
 # db.add(p2)
 # db.add(p3)
 # db.add(p4)
+# db.add(p5)
 # db.commit()
 
 # result = db.query(Users, Passwords).filter(Users.id == Passwords.user_id)
