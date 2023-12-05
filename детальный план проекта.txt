@@ -1,0 +1,16 @@
+- создать jinja2-формы:
+	- для index СДЕЛАНО
+	- для login СДЕЛАНО
+	- для messages
+
+- создать базу данных через SQLAlchemy:
+	- users (id, name) СДЕЛАНО
+	- passwords (id, user_id(foreign_key), pass) СДЕЛАНО
+	- messages (id, user_id, body_text, time) в процессе
+
+- установить связи между таблицами users и passwords для foreign_key СДЕЛАНО
+
+- сделать сессию для залогиненных юзеров
+
+
+- запушить все в гит
