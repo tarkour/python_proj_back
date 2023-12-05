@@ -16,6 +16,8 @@ def main():
 #     return 'hello, world??'
 
 
+# git check test
+
 @app.route('/messages', methods=['GET', 'POST'])
 def messages():
     if 'login' in session:
