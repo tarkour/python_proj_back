@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from database_runner import *
 import datetime
 from datetime import timedelta
+import requests
 
 app = Flask(__name__)
 app.secret_key = 'hello'
@@ -16,8 +17,6 @@ def main():
 #     return 'hello, world??'
 
 
-
-
 @app.route('/messages', methods=['GET', 'POST'])
 def messages():
     if 'login' in session:
@@ -25,7 +24,7 @@ def messages():
         session.permanent = True
         all_messages = db.query(Messages).all()
 
-        message = None
+        message = ''
         print('request.method = ', request.method)
         if request.method == 'POST' and message != None:
 
@@ -37,8 +36,11 @@ def messages():
             add_message = Messages(d.get_id(), message, datetime.datetime.utcnow())
             db.add(add_message)
             db.commit()
-            message = None
-            print('message =',message)
+            # message = ''
+
+            # response = requests.get('http://127.0.0.1:5000/messages')
+
+            return redirect(url_for('messages'))
 
         return render_template('messages.html',
                                login=login,
@@ -62,7 +64,7 @@ def login():
     print(login, password)
 
 
-    if db.query(Users).filter(Users.name == login).all()[0] != []:
+    if db.query(Users).filter(Users.name == login).all() != []:
         login_user_id = db.query(Users).filter(Users.name == login).all()[0]
         login_user_id = login_user_id.get_id()
         passwords_user_id = db.query(Passwords).filter(Passwords.password == password).all() # получение всех списков, где пароль такой же, как мы ввели
@@ -77,7 +79,7 @@ def login():
 
 
         if flag == True and temp_pass == password:
-            flash('You are in!')
+            flash(f'You are in, {login}!')
             session['login'] = login
             return redirect(url_for('messages'))
         else:
