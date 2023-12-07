@@ -75,10 +75,6 @@ db = Session() #instance
 
 
 
-
-
-
-
 # di = db.query(Users).filter_by(name='aloha').all()
 # d = di[0]
 # print(d.get_id())
