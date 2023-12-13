@@ -1,20 +1,24 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
 
 <form action= "" method="post">
 	<p>
-		<label for="login">Your LOGIN:</label>
+		<label for="login">Creare Your LOGIN:</label>
 		<input type="text" name="login">
 	</p>
 	<p>
-		<label for="password">Your PASSWORD:</label>
+		<label for="password">Create Your PASSWORD:</label>
 		<input type="password" name="password">
+	</p>
+    <p>
+		<label for="repeat_password">Repeat Your PASSWORD:</label>
+		<input type="password" name="repeat_password">
 	</p>
 	<p>
 		<input type="submit">
 	</p>
 </form>
 
-<a href="/registration">REGISTRATION</a>
 {% endblock %}
