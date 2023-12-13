@@ -1,20 +1,5 @@
 {% extends 'base.html' %}
 
-{% block welcome %}
-<a href="/logout">LOGOUT</a>
-
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-
-{% endblock %}
-
 {% block content%}
 
 <h2>Other's messages:</h2>
@@ -37,7 +22,6 @@ Here's nothing yet...
 
 </form>
 
-
 <nav aria-label="Page navigation example">
   <ul class="pagination">
     <li class="page-item">
@@ -53,5 +37,6 @@ Here's nothing yet...
   </ul>
 </nav>
 
+<a href="/logout">LOGOUT</a>
 
 {% endblock %}
