@@ -1,13 +1,32 @@
+import sqlalchemy
 from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, CHAR, DateTime, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import MetaData
+import pytz
+metadata_obj = MetaData()
 
 Base = declarative_base()
 
+convention = {
+    'all_column_names': lambda constraint, table: '_'.join([
+        column.name for column in constraint.columns.values()
+    ]),
+    'ix': 'ix__%(table_name)s__%(all_column_names)s',
+    'uq': 'uq__%(table_name)s__%(all_column_names)s',
+    'ck': 'ck__%(table_name)s__%(constraint_name)s',
+    'fk': (
+        'fk__%(table_name)s__%(all_column_names)s__'
+        '%(referred_table_name)s'
+    ),
+    'pk': 'pk__%(table_name)s'
+}
+
+metadata = sqlalchemy.MetaData(naming_convention=convention)
 
 class Users(Base):
     __tablename__ = 'users'
-
+    metadata = metadata_obj
     id = Column(Integer, primary_key=True)
     name = Column('name/login', String)
 
@@ -26,6 +45,7 @@ class Users(Base):
 
 class Passwords(Base):
     __tablename__ = 'passwords'
+    metadata = metadata_obj
     user_id = Column('user_id', Integer, ForeignKey('users.id'), primary_key=True)
     password = Column('passwords', String)
 
@@ -46,7 +66,7 @@ class Passwords(Base):
 
 class Messages(Base):
     __tablename__ = 'messages'
-
+    metadata = metadata_obj
     id = Column('id', Integer, primary_key=True)
     user_id = Column('user_id', ForeignKey('users.id'))
     body = Column('messages', String)
@@ -71,7 +91,7 @@ Base.metadata.create_all(bind=engine)
 Session = sessionmaker(bind=engine) # Class
 db = Session() #instance
 
-
+# print(engine.url.render_as_string(hide_password=False))
 
 
 
