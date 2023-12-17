@@ -118,7 +118,7 @@ def messages():
             db.add(add_message)
             db.commit()
 
-            return redirect(url_for('messages'))
+            return redirect(url_for('messages_pagination'))
 
         return render_template('messages.html',
                                login=login,
@@ -136,6 +136,8 @@ def messages_pagination(page_num):
         session.permanent = True
 
         all_msg_count = db.query(Messages).count()
+        if  all_msg_count == 0:
+            return render_template('messages.html')
         messages_per_page = 10  # сколько сообщений на одной странице
         max_pages_count = all_msg_count // messages_per_page
         if all_msg_count % messages_per_page != 0:
