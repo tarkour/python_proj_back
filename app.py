@@ -14,48 +14,6 @@ print("test")
 def main():
     return render_template('index.html')
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    login = ''
-    password = ''
-    if request.method == 'POST':
-        login = request.form.get('login')
-        password = request.form.get('password')
-    else:
-        if 'login' in session:
-            return redirect(url_for('messages'))
-        return render_template('login.html')
-    # print(login, password)
-
-
-    if db.query(Users).filter(Users.name == login).all() != []:
-        login_user_id = db.query(Users).filter(Users.name == login).all()[0]
-        login_user_id = login_user_id.get_id()
-        passwords_user_id = db.query(Passwords).filter(Passwords.password == password).all() # получение всех списков, где пароль такой же, как мы ввели
-                                                                                            # проверка делается на случай одинковых паролей в базе данных
-        flag = False
-        temp_pass = ''
-        for p in passwords_user_id:
-
-            if login_user_id == p.get_user_id(): # сравнение id у логина и user_id у пароля
-                flag = True # если совпадает - флаг становится True
-                temp_pass = p.get_pass()
-
-
-        if flag == True and temp_pass == password:
-            flash(f'You are in, {login}!')
-            session['login'] = login
-            return redirect(url_for('messages_pagination', page_num=1))
-        else:
-            flash('wrong pass')
-            return redirect(url_for('login'))
-
-    else:
-        flash('wrong login')
-        return redirect(url_for('login'))
-
-
 
 @app.route('/logout')
 def logout():
@@ -234,15 +192,6 @@ def login():
     else:
         flash('wrong login')
         return redirect(url_for('login'))
-
-
-
-
-
-@app.route('/logout')
-def logout():
-    session.pop('login', None)
-    return redirect(url_for('login'))
 
 
 from sqlalchemy import select
