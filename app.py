@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from database_runner import *
 import datetime
 from datetime import timedelta
-
+from db_connection import DBSession
 
 app = Flask(__name__)
 app.secret_key = 'hello'
@@ -11,7 +11,6 @@ app.permanent_session_lifetime = timedelta(minutes=1)
 @app.route('/main', methods=['GET', 'POST'])
 def main():
     return render_template('index.html')
-
 
 
 @app.route('/messages', methods=['GET', 'POST'])
@@ -111,24 +110,23 @@ def messages_pagination(page_num):
         return redirect(url_for('login'))
 
 
-
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    login = ''
+    if 'login' in session:
+        return redirect(url_for('messages'))
+
+    username = ''
     password = ''
     if request.method == 'POST':
-        login = request.form.get('login')
+        username = request.form.get('login')
         password = request.form.get('password')
     else:
-        if 'login' in session:
-            return redirect(url_for('messages'))
         return render_template('login.html')
-    print(login, password)
+    print(username, password)
 
-
-    if db.query(Users).filter(Users.name == login).all() != []:
-        login_user_id = db.query(Users).filter(Users.name == login).all()[0]
+    if db.query(Users).filter(Users.name == username).all() != []:
+        login_user_id = db.query(Users).filter(Users.name == username).all()[0]
         login_user_id = login_user_id.get_id()
         passwords_user_id = db.query(Passwords).filter(Passwords.password == password).all() # получение всех списков, где пароль такой же, как мы ввели
                                                                                             # проверка делается на случай одинковых паролей в базе данных
@@ -142,8 +140,8 @@ def login():
 
 
         if flag == True and temp_pass == password:
-            flash(f'You are in, {login}!')
-            session['login'] = login
+            flash(f'You are in, {username}!')
+            session['login'] = username
             return redirect(url_for('messages_pagination', page_num=1))
         else:
             flash('wrong pass')
@@ -163,5 +161,20 @@ def logout():
     return redirect(url_for('login'))
 
 
+from sqlalchemy import select
+from model.test_table import TestTable
+from repository.password import PasswordRepository
+
+
 if __name__ == '__main__':
+    # stmt = select(TestTable)
+    # with DBSession as session:
+    #     for row in session.execute(stmt):
+    #         print(row)
+    # rows = DBSession.scalars(select(TestTable)).all()
+
+    passwordRepository = PasswordRepository(DBSession)
+    passwordRepository.check_password_by_user_id(1, "pass1")
+
+    DBSession.query("SELECT * FROM test_table")
     app.run(debug=True)
