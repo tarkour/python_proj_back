@@ -8,8 +8,6 @@ app = Flask(__name__)
 app.secret_key = 'hello'
 app.permanent_session_lifetime = timedelta(minutes=1)
 
-print("test")
-
 @app.route('/main', methods=['GET', 'POST'])
 def main():
     return render_template('index.html')
