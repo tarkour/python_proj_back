@@ -259,6 +259,6 @@ if __name__ == '__main__':
 
     passwordRepository = PasswordRepository(DBSession)
     passwordRepository.check_password_by_user_id(1, "pass1")
-
+    print(passwordRepository)
     DBSession.query("SELECT * FROM test_table")
     app.run(debug=True)
