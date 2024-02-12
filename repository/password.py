@@ -19,3 +19,4 @@ class PasswordRepository:
                              order_by(Password.id.desc())
                              ).first()
         return vals is not None
+

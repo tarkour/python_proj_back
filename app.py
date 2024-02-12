@@ -1,17 +1,70 @@
+import repository
+import service
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from database_runner import *
-import datetime
 from datetime import timedelta
 from db_connection import DBSession
+from model import user, password, message
+from service import AuthorizationService
+from repository import PasswordRepository, UserRepository
 
 app = Flask(__name__)
 app.secret_key = 'hello'
 app.permanent_session_lifetime = timedelta(minutes=1)
 
+authorizationService = None
+
 @app.route('/main', methods=['GET', 'POST'])
 def main():
     return render_template('index.html')
 
+
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if 'login' in session:
+        return redirect(url_for('messages'))
+
+    username = ''
+    password = ''
+    if request.method == 'POST':
+        username = request.form.get('login')
+        password = request.form.get('password')
+    else:
+        return render_template('login.html')
+
+    user = authorizationService.authorize(username, password)
+
+    userRepository = repository.UserRepository(DBSession)
+    passwordRepository = repository.PasswordRepository(DBSession)
+
+    authorizationService = service.AuthorizationService(userRepository, passwordRepository)
+
+
+    # if DBSession.query(User).filter(User.name == username).all() != []:
+    #     login_user_id = DBSession.query(User).filter(User.name == username).all()[0]
+    #     login_user_id = login_user_id.get_id()
+    #     passwords_user_id = DBSession.query(Passwords).filter(Passwords.password == password).all() # получение всех списков, где пароль такой же, как мы ввели
+    #                                                                                         # проверка делается на случай одинковых паролей в базе данных
+    #     flag = False
+    #     temp_pass = ''
+    #     for p in passwords_user_id:
+    #
+    #         if login_user_id == p.get_user_id(): # сравнение id у логина и user_id у пароля
+    #             flag = True # если совпадает - флаг становится True
+    #             temp_pass = p.get_pass()
+    #
+    #
+    #     if flag == True and temp_pass == password:
+    #         flash(f'You are in, {username}!')
+    #         session['login'] = username
+    #         return redirect(url_for('messages_pagination', page_num=1))
+    #     else:
+    #         flash('wrong pass')
+    #         return redirect(url_for('login'))
+    #
+    # else:
+    #     flash('wrong login')
+    #     return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
@@ -33,7 +86,7 @@ def registration():
         return render_template('registration.html')
 
 
-    exist_login = db.query(Users).filter(Users.name == login).all()
+    exist_login = DBSession.query(User).filter(User.name == login).all()
     if exist_login != []:
         flash('This login has been taken already!')
         return render_template('registration.html')
@@ -42,15 +95,15 @@ def registration():
         flash('Passwords are not the same!')
         return render_template('registration.html')
 
-    user_add = Users(login)
-    db.add(user_add)
-    db.commit()
+    user = User(login)
+    DBSession.add(user)
+    DBSession.commit()
 
-    user_id = db.query(Users).filter_by(name=login).all()[0].get_id()
+    user_id = DBSession.query(User).filter_by(name=login).all()[0].get_id()
 
     pass_add = Passwords(user_id, password)
-    db.add(pass_add)
-    db.commit()  # не опасна ли такая схема добавления, если одновременных регистраций будет много? превратится в кашу или нет?
+    DBSession.add(pass_add)
+    DBSession.commit()  # не опасна ли такая схема добавления, если одновременных регистраций будет много? превратится в кашу или нет?
 
     flash('Your registration is successful')
     return redirect(url_for('messages_pagination', page_num=1))
@@ -61,19 +114,19 @@ def messages():
         login = session['login']
         session.permanent = True
 
-        all_messages = db.query(Messages).all()
+        all_messages = DBSession.query(Messages).all()
 
         message = ''
         if request.method == 'POST' and message != None:
 
             message = request.form.get('message')
 
-            di = db.query(Users).filter_by(name=login).all() # получение списка с содержанием Users(login)
-            d = di[0] # получение самого Users(login)
+            di = DBSession.query(User).filter_by(name=login).all() # получение списка с содержанием User(login)
+            d = di[0] # получение самого User(login)
 
             add_message = Messages(d.get_id(), message, datetime.datetime.utcnow())
-            db.add(add_message)
-            db.commit()
+            DBSession.add(add_message)
+            DBSession.commit()
 
             return redirect(url_for('messages_pagination'))
 
@@ -92,7 +145,7 @@ def messages_pagination(page_num):
         login = session['login']
         session.permanent = True
 
-        all_msg_count = db.query(Messages).count()
+        all_msg_count = DBSession.query(Messages).count()
         if  all_msg_count == 0:
             return render_template('messages.html')
         messages_per_page = 10  # сколько сообщений на одной странице
@@ -106,7 +159,7 @@ def messages_pagination(page_num):
         if page_num < 1: #обработка случая "0" в адресной строке
             return redirect(url_for('messages_pagination', page_num=1))
 
-        all_msg = db.query(Messages).all()[::-1]
+        all_msg = DBSession.query(Messages).all()[::-1]
         msg_left = messages_per_page - (all_msg_count % messages_per_page)
 
 
@@ -132,13 +185,13 @@ def messages_pagination(page_num):
         if request.method == 'POST' and message != None:
             message = request.form.get('message')
 
-            user_id = db.query(Users).filter_by(name=login).all()[0].get_id()  # получение списка с содержанием Users(login)
-                                                                               # получение самого Users(login) + получение user_id
+            user_id = DBSession.query(User).filter_by(name=login).all()[0].get_id()  # получение списка с содержанием User(login)
+                                                                               # получение самого User(login) + получение user_id
 
             add_message = Messages(user_id, message, datetime.datetime.utcnow())
 
-            db.add(add_message)
-            db.commit()
+            DBSession.add(add_message)
+            DBSession.commit()
             return redirect(url_for('messages_pagination', page_num=1))
 
         return render_template('messages.html', all_messages=all_messages,
@@ -150,51 +203,11 @@ def messages_pagination(page_num):
         return redirect(url_for('login'))
 
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if 'login' in session:
-        return redirect(url_for('messages'))
 
-    username = ''
-    password = ''
-    if request.method == 'POST':
-        username = request.form.get('login')
-        password = request.form.get('password')
-    else:
-        return render_template('login.html')
-    print(username, password)
-
-    if db.query(Users).filter(Users.name == username).all() != []:
-        login_user_id = db.query(Users).filter(Users.name == username).all()[0]
-        login_user_id = login_user_id.get_id()
-        passwords_user_id = db.query(Passwords).filter(Passwords.password == password).all() # получение всех списков, где пароль такой же, как мы ввели
-                                                                                            # проверка делается на случай одинковых паролей в базе данных
-        flag = False
-        temp_pass = ''
-        for p in passwords_user_id:
-
-            if login_user_id == p.get_user_id(): # сравнение id у логина и user_id у пароля
-                flag = True # если совпадает - флаг становится True
-                temp_pass = p.get_pass()
-
-
-        if flag == True and temp_pass == password:
-            flash(f'You are in, {username}!')
-            session['login'] = username
-            return redirect(url_for('messages_pagination', page_num=1))
-        else:
-            flash('wrong pass')
-            return redirect(url_for('login'))
-
-    else:
-        flash('wrong login')
-        return redirect(url_for('login'))
-
-
-from sqlalchemy import select
-from model.test_table import TestTable
-from repository.password import PasswordRepository
+#
+# from sqlalchemy import select
+# from model.test_table import TestTable
+# from repository.password import PasswordRepository
 
 
 if __name__ == '__main__':
@@ -203,9 +216,17 @@ if __name__ == '__main__':
     #     for row in session.execute(stmt):
     #         print(row)
     # rows = DBSession.scalars(select(TestTable)).all()
+    #
+    # passwordRepository = PasswordRepository(DBSession)
+    # passwordRepository.check_password_by_user_id(1, "pass1")
+    # print(passwordRepository)
+    # DBSession.query("SELECT * FROM test_table")
 
-    passwordRepository = PasswordRepository(DBSession)
-    passwordRepository.check_password_by_user_id(1, "pass1")
-    print(passwordRepository)
-    DBSession.query("SELECT * FROM test_table")
+    # userRepository = repository.UserRepository(DBSession)
+    # passwordRepository = repository.PasswordRepository(DBSession)
+    #
+    # authorizationService = service.AuthorizationService(userRepository, passwordRepository)
+
     app.run(debug=True)
+
+

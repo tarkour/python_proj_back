@@ -4,8 +4,21 @@ from sqlalchemy.orm import sessionmaker
 import importlib.util
 from pathlib import Path
 import os
+import yaml
 
-db_engine = create_engine('postgresql+psycopg2://root:111@localhost:5432/test_store', echo=True)
+with open('config.yaml') as config_file:
+    config = yaml.safe_load(config_file)
+
+host = config['db']['host']
+port = config['db']['port']
+user = config['db']['user']
+password = config['db']['password']
+name = config['db']['name']
+
+engine_name = 'postgresql+psycopg2://'+user+':'+password+'@'+host+':'+port+'/'+name
+
+
+db_engine = create_engine(engine_name, echo=True)
 BaseModel.metadata.create_all(bind=db_engine)
 
 db_session_maker = sessionmaker(bind=db_engine)
@@ -37,3 +50,4 @@ def _package_contents(package_name):
                 ret |= _package_contents(current)
 
     return ret
+

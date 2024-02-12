@@ -1,14 +1,22 @@
 # Use postgres/example user/password credentials
-version: '3.1'
-
+version: '3.7'
 services:
-
-  db:
-    image: postgres
-    restart: always
-    environment:
-        - "POSTGRES_USER=root"
-        - "POSTGRES_PASSWORD=111"
-        - "POSTGRES_DB=test_store"
-    ports:
-        - "5432:5432"
+    postgres:
+        image: postgres
+        environment:
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=111
+            - POSTGRES_DB=test_db
+        ports:
+            - 5433:5432
+#        logging:
+#            options:
+#                max-size: 10m
+#                max-file: "3"
+#    pgadmin:
+#        image: dpage/pgadmin4
+#        environment:
+#            - PGADMIN_DEFAULT_EMAIL=admin@mail.com
+#            - PGADMIN_DEFAULT_PASSWORD=0000
+#        ports:
+#            - "5050:80"
