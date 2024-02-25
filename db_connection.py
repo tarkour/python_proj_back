@@ -3,19 +3,10 @@ from model import BaseModel
 from sqlalchemy.orm import sessionmaker
 import importlib.util
 from pathlib import Path
-import os
-import yaml
+from service.ConfigService import load, get_connection_string
 
-with open('config.yaml') as config_file:
-    config = yaml.safe_load(config_file)
 
-host = config['db']['host']
-port = config['db']['port']
-user = config['db']['user']
-password = config['db']['password']
-name = config['db']['name']
-
-engine_name = 'postgresql+psycopg2://'+user+':'+password+'@'+host+':'+port+'/'+name
+engine_name = get_connection_string('config.yaml')
 
 
 db_engine = create_engine(engine_name, echo=True)
