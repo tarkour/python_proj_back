@@ -1,6 +1,9 @@
 import os
 import yaml
 
+# class ConfigService():
+#     def __init__(self):
+#         pass
 def load(path):
     with open(path) as config_file:
         config = yaml.safe_load(config_file)
