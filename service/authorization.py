@@ -1,3 +1,6 @@
+from repository.password import PasswordRepository
+from repository.user import UserRepository
+
 class AuthorizationService():
     def __init__(self, passwordRepository, userRepository):
         self.passwordRepository = passwordRepository

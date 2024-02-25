@@ -4,7 +4,7 @@ from sqlalchemy import select
 class UserRepository:
 
     def __init__(self, session):
-        self.session
+        self.session = session
 
     @property
     def model(self) -> User:

@@ -1,5 +1,6 @@
 from flask import render_template
-from db_connection import DBSession #??????
+import os
+
 
 class RegistrationService():
 
@@ -30,3 +31,4 @@ class RegistrationService():
         DBSession.commit()
 
         flash('Your registration is successful')
+
