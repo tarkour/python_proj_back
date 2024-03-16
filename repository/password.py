@@ -1,9 +1,10 @@
 from model.password import Password
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 class PasswordRepository:
 
-    def __init__(self, session):
+    def __init__(self, session: Session):
         self.session = session
 
     @property

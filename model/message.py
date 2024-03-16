@@ -21,3 +21,8 @@ class Message(BaseModel):
 
     def get_user_id(self):
         return self.user_id
+    
+    def set_user_id(self, val):
+        self.user_id = val
+
+

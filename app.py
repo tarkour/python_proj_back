@@ -1,3 +1,4 @@
+import model.password
 import repository
 import service
 from flask import Flask, render_template, request, redirect, url_for, session, flash
@@ -11,7 +12,7 @@ app = Flask(__name__)
 app.secret_key = 'hello'
 app.permanent_session_lifetime = timedelta(minutes=1)
 
-authorizationService = None
+authorization_service = None
 
 @app.route('/main', methods=['GET', 'POST'])
 def main():
@@ -24,56 +25,19 @@ def login():
     if 'login' in session:
         return redirect(url_for('messages'))
 
-    username = ''
-    password = ''
+
     if request.method == 'POST':
         username = request.form.get('login')
         password = request.form.get('password')
+        user = authorization_service.authorize(username, password)
+        if user is None:
+            return render_template('login.html', login_error=True)
+        else:
+           session['login'] = user.name
+           return redirect(url_for('messages'))
     else:
         return render_template('login.html')
 
-    #код снизу вызывает ошибку "UnboundLocalError: cannot access local variable 'authorizationService' where it is not associated with a value"
-    # userRepository = repository.UserRepository(DBSession)
-    # passwordRepository = repository.PasswordRepository(DBSession)
-    #
-    # user = authorizationService.authorize(username, password)
-    #
-    # authorizationService = service.AuthorizationService(userRepository, passwordRepository)
-
-    if authorizationService:
-        return redirect(url_for('messages_pagination', page_num=1))
-    else:
-        return render_template('login.html')
-
-
-
-
-
-    # if DBSession.query(User).filter(User.name == username).all() != []:
-    #     login_user_id = DBSession.query(User).filter(User.name == username).all()[0]
-    #     login_user_id = login_user_id.get_id()
-    #     passwords_user_id = DBSession.query(Passwords).filter(Passwords.password == password).all() # получение всех списков, где пароль такой же, как мы ввели
-    #                                                                                         # проверка делается на случай одинковых паролей в базе данных
-    #     flag = False
-    #     temp_pass = ''
-    #     for p in passwords_user_id:
-    #
-    #         if login_user_id == p.get_user_id(): # сравнение id у логина и user_id у пароля
-    #             flag = True # если совпадает - флаг становится True
-    #             temp_pass = p.get_pass()
-    #
-    #
-    #     if flag == True and temp_pass == password:
-    #         flash(f'You are in, {username}!')
-    #         session['login'] = username
-    #         return redirect(url_for('messages_pagination', page_num=1))
-    #     else:
-    #         flash('wrong pass')
-    #         return redirect(url_for('login'))
-    #
-    # else:
-    #     flash('wrong login')
-    #     return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
@@ -242,11 +206,9 @@ if __name__ == '__main__':
     # passwordRepository.check_password_by_user_id(1, "pass1")
     # print(passwordRepository)
     # DBSession.query("SELECT * FROM test_table")
-
-    # userRepository = repository.UserRepository(DBSession)
-    # passwordRepository = repository.PasswordRepository(DBSession)
-    #
-    # authorizationService = service.AuthorizationService(userRepository, passwordRepository)
+    user_repository = repository.UserRepository(DBSession)
+    password_repository = repository.PasswordRepository(DBSession)
+    authorization_service = service.AuthorizationService(password_repository, user_repository)
 
     app.run(debug=True)
 

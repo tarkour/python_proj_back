@@ -1,22 +1,24 @@
 from model.user import User
 from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 
 class UserRepository:
 
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, db_session: Session):
+        self.session = db_session
 
     @property
     def model(self) -> User:
         return User
 
     def check_login_if_exists(self, login):
-        value = self.query(Users).filter(Users.name == login).all()
+        value = self.session.query(User).filter(User.name == login).all()
         return False if value == [] else True
 
-    def get_user_by_login(self, login):
-        value = self.query(Users).filter(Users.name == login).first()
-        return value if value != [] else None
+    def get_user_by_login(self, login: str):
+        return self.session.query(User).filter(User.name == login).first()
 
-    def get_user_id(self, login):
+    def get_user_by_login__(self, login: str) -> User:
+        "select * from user where login='{}'".format(login)
         return login.get_id()

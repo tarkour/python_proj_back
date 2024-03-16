@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 import importlib.util
 from pathlib import Path
 from service.configservice import load, get_connection_string
+import os
 
 
 engine_name = get_connection_string('config.yaml')
